@@ -26,7 +26,7 @@ public class EncryptionService {
         return new EncryptionService(keyHex);
     }
 
-    public String encrypt(String plaintext) throws Exception {
+    public byte[] encryptBytes(byte[] textInBytes) throws Exception {
 
         byte[] iv = new byte[GCM_IV_LENGTH];
         secureRandom.nextBytes(iv);
@@ -38,19 +38,23 @@ public class EncryptionService {
             cipher.updateAAD(associatedData);
         }
 
-        byte[] cipherText = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
+        byte[] cipherText = cipher.doFinal(textInBytes);
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(iv.length + cipherText.length);
         byteBuffer.put(iv);
         byteBuffer.put(cipherText);
-        return encodeUsingHexFormat(byteBuffer.array());
+        return byteBuffer.array();
+    }
+
+    public String encrypt(String plaintext) throws Exception {
+        return encodeUsingHexFormat(encryptBytes(plaintext.getBytes(StandardCharsets.UTF_8)));
     }
 
     public String decrypt(String cipherMessage) throws Exception {
-        return decryptHex(decodeUsingHexFormat(cipherMessage));
+        return new String(decryptHex(decodeUsingHexFormat(cipherMessage)), StandardCharsets.UTF_8);
     }
 
-    private String decryptHex(byte[] cipherMessage) throws Exception {
+    public byte[] decryptHex(byte[] cipherMessage) throws Exception {
         final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
 
         AlgorithmParameterSpec gcmIv = new GCMParameterSpec(128, cipherMessage, 0, GCM_IV_LENGTH);
@@ -59,9 +63,7 @@ public class EncryptionService {
         if (associatedData != null) {
             cipher.updateAAD(associatedData);
         }
-        byte[] plainText = cipher.doFinal(cipherMessage, GCM_IV_LENGTH, cipherMessage.length - GCM_IV_LENGTH);
-
-        return new String(plainText, StandardCharsets.UTF_8);
+        return cipher.doFinal(cipherMessage, GCM_IV_LENGTH, cipherMessage.length - GCM_IV_LENGTH);
     }
 
     protected static String encodeUsingHexFormat(byte[] bytes) {
