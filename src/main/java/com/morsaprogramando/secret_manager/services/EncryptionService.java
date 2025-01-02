@@ -17,6 +17,11 @@ public class EncryptionService {
     private final SecretKey secretKey;
     private final byte[] associatedData;
 
+    private EncryptionService(byte[] keyHex) {
+        secretKey = new SecretKeySpec(keyHex, "AES");
+        associatedData = "ProtocolVersion1".getBytes(StandardCharsets.UTF_8);
+    }
+
     private EncryptionService(String keyHex) {
         secretKey = new SecretKeySpec(decodeUsingHexFormat(keyHex), "AES");
         associatedData = "ProtocolVersion1".getBytes(StandardCharsets.UTF_8);
@@ -24,6 +29,10 @@ public class EncryptionService {
 
     public static EncryptionService create(String keyHex) {
         return new EncryptionService(keyHex);
+    }
+
+    public static EncryptionService createFromBytes(byte[] key) {
+        return new EncryptionService(key);
     }
 
     public byte[] encryptBytes(byte[] textInBytes) throws Exception {

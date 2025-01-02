@@ -17,8 +17,8 @@ public class PasswordManagerService {
 
     private final EncryptionService encryptionService;
 
-    public PasswordManagerService(String encryptionKeyHex) {
-        this.encryptionService = EncryptionService.create(encryptionKeyHex);
+    public PasswordManagerService(byte[] encryptionKeyHex) {
+        this.encryptionService = EncryptionService.createFromBytes(encryptionKeyHex);
     }
 
     /**
