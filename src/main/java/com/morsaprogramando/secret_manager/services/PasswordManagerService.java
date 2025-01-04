@@ -23,31 +23,15 @@ public class PasswordManagerService {
 
     public byte[] encodePasswords(List<StoredPassword> passwords) throws Exception {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        DataOutputStream dataStream = new DataOutputStream(byteStream);
 
-        // Write header
-        dataStream.writeInt(MAGIC_NUMBER);
-        dataStream.writeInt(VERSION);
-
-        // Serialize passwords into a compact format
-        ByteArrayOutputStream passwordsStream = new ByteArrayOutputStream();
-        DataOutputStream passwordsDataStream = new DataOutputStream(passwordsStream);
-        for (StoredPassword password : passwords) {
-            writeString(passwordsDataStream, password.title());
-            writeString(passwordsDataStream, password.username());
-            writeString(passwordsDataStream, password.password());
-        }
-        passwordsDataStream.flush();
-
-        // Encrypt serialized password data
-        byte[] serializedData = passwordsStream.toByteArray();
+        DataOutputStream dataStream = prepareDataStreamWithHeader(byteStream);
+        byte[] serializedData = serializePasswords(passwords);
         byte[] encryptBytes = encryptionService.encryptBytes(serializedData);
 
-        // Write encrypted data length and data
         dataStream.writeInt(encryptBytes.length);
         dataStream.write(encryptBytes);
-
         dataStream.flush();
+
         return byteStream.toByteArray();
     }
 
@@ -84,6 +68,29 @@ public class PasswordManagerService {
         }
 
         return passwords;
+    }
+
+    private DataOutputStream prepareDataStreamWithHeader(ByteArrayOutputStream stream) throws IOException {
+        DataOutputStream dataStream = new DataOutputStream(stream);
+
+        dataStream.writeInt(MAGIC_NUMBER);
+        dataStream.writeInt(VERSION);
+
+        return dataStream;
+    }
+
+    private byte[] serializePasswords(List<StoredPassword> passwords) throws IOException {
+
+        ByteArrayOutputStream passwordsStream = new ByteArrayOutputStream();
+        DataOutputStream passwordsDataStream = new DataOutputStream(passwordsStream);
+        for (StoredPassword password : passwords) {
+            writeString(passwordsDataStream, password.title());
+            writeString(passwordsDataStream, password.username());
+            writeString(passwordsDataStream, password.password());
+        }
+        passwordsDataStream.flush();
+
+        return passwordsStream.toByteArray();
     }
 
     private void writeString(DataOutputStream stream, String value) throws IOException {
