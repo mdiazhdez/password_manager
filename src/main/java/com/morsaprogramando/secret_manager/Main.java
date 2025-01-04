@@ -3,18 +3,14 @@ package com.morsaprogramando.secret_manager;
 import com.morsaprogramando.secret_manager.models.StoredPassword;
 import com.morsaprogramando.secret_manager.services.PasswordManagerService;
 
-import java.security.SecureRandom;
 import java.util.List;
 
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        SecureRandom secureRandom = new SecureRandom();
+        String masterPassword = "unpasswordmuyseguro123!";
 
-        byte[] key = new byte[16];
-        secureRandom.nextBytes(key);
-
-        PasswordManagerService manager = new PasswordManagerService(key);
+        PasswordManagerService manager = new PasswordManagerService(masterPassword);
 
         // Example: Encode passwords
         List<StoredPassword> passwords = List.of(

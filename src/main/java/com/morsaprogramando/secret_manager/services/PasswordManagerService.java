@@ -17,13 +17,10 @@ public class PasswordManagerService {
 
     private final EncryptionService encryptionService;
 
-    public PasswordManagerService(byte[] encryptionKeyHex) {
-        this.encryptionService = EncryptionService.createFromBytes(encryptionKeyHex);
+    public PasswordManagerService(String masterPassword) {
+        this.encryptionService = EncryptionService.create(masterPassword);
     }
 
-    /**
-     * Encodes a list of StoredPassword records into a secure binary format.
-     */
     public byte[] encodePasswords(List<StoredPassword> passwords) throws Exception {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(byteStream);
@@ -73,7 +70,7 @@ public class PasswordManagerService {
         dataStream.readFully(encryptedBytes);
 
         // Decrypt data
-        byte[] decryptedData = encryptionService.decryptHex(encryptedBytes);
+        byte[] decryptedData = encryptionService.decryptBytes(encryptedBytes);
 
         // Deserialize passwords
         DataInputStream passwordsStream = new DataInputStream(new ByteArrayInputStream(decryptedData));
@@ -97,6 +94,6 @@ public class PasswordManagerService {
         int length = stream.readInt();
         byte[] bytes = new byte[length];
         stream.readFully(bytes);
-        return new String(bytes, StandardCharsets.UTF_8);
+        return new String(bytes, CHARSET);
     }
 }
