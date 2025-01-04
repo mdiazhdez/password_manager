@@ -15,8 +15,8 @@ public class PasswordManagerService {
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private final EncryptionService encryptionService;
 
-    public PasswordManagerService(String masterPassword) {
-        this.encryptionService = EncryptionService.create(masterPassword);
+    public PasswordManagerService(EncryptionService encryptionService) {
+        this.encryptionService = encryptionService;
     }
 
     public byte[] encodePasswords(List<StoredPassword> passwords) throws Exception {

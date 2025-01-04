@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 
-import static com.morsaprogramando.secret_manager.Utils.generateRandomString;
+import static com.morsaprogramando.secret_manager.services.Utils.generateRandomString;
 
 public class EncryptionServiceTest {
 

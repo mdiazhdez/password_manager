@@ -1,4 +1,4 @@
-package com.morsaprogramando.secret_manager;
+package com.morsaprogramando.secret_manager.services;
 
 import java.util.Random;
 
