@@ -5,22 +5,25 @@ import java.io.IOException;
 public enum InitialMenu {
     INSTANCE;
 
-    public enum Action {
-        OPEN, CREATE, QUIT;
-    }
+    public sealed interface Action permits Open, Create, Quit {}
+
+    public enum Open implements Action { INSTANCE }
+    public enum Create implements Action { INSTANCE }
+    public enum Quit implements Action { INSTANCE }
 
     public Action getAction() {
         try {
             String action = Utils.readLine("Choose [o:open, c:create, q:quit]? ");
 
-            switch (action.toLowerCase().trim()) {
-                case "o": return Action.OPEN;
-                case "c": return Action.CREATE;
-                case "q": return Action.QUIT;
-                default: Utils.println("Uknown action, exiting...");
-
-                return Action.QUIT;
-            }
+            return switch (action.toLowerCase()) {
+                case "o" -> Open.INSTANCE;
+                case "c" -> Create.INSTANCE;
+                case "q" -> Quit.INSTANCE;
+                default -> {
+                    Utils.println("Uknown action, exiting...");
+                    yield Quit.INSTANCE;
+                }
+            };
 
         } catch (IOException e) {
             throw new RuntimeException(e);

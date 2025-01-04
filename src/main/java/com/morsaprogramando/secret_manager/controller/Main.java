@@ -15,9 +15,9 @@ public class Main {
         InitialMenu.Action action = InitialMenu.INSTANCE.getAction();
 
         switch (action) {
-            case CREATE -> { createNewKeyStore(); }
-            case OPEN -> { openKeyStore(); }
-            case QUIT -> { return; }
+            case InitialMenu.Open __ -> { openKeyStore(); }
+            case InitialMenu.Create __ -> { createNewKeyStore(); }
+            case InitialMenu.Quit __ -> { return; }
         }
     }
 
