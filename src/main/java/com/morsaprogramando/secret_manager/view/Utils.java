@@ -9,7 +9,7 @@ public class Utils{
             new BufferedReader(new InputStreamReader(System.in));
 
     static public String readLine(String message) throws IOException {
-        print(message); return keyboard.readLine();
+        print(message); return keyboard.readLine().trim();
     }
     static public int readInt(String message)throws IOException{
         return Integer.parseInt(readLine(message));

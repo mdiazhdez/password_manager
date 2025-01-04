@@ -1,9 +1,11 @@
 package com.morsaprogramando.secret_manager.controller;
 
+import com.morsaprogramando.secret_manager.models.KeystoreData;
 import com.morsaprogramando.secret_manager.models.StoredPassword;
 import com.morsaprogramando.secret_manager.services.EncryptionService;
 import com.morsaprogramando.secret_manager.services.PasswordManagerService;
 import com.morsaprogramando.secret_manager.view.InitialMenu;
+import com.morsaprogramando.secret_manager.view.NewKeystoreMenu;
 
 import java.util.List;
 
@@ -20,7 +22,7 @@ public class Main {
     }
 
     private static void createNewKeyStore() {
-
+        KeystoreData data = NewKeystoreMenu.INSTANCE.createData();
     }
 
     private static void openKeyStore() {}
