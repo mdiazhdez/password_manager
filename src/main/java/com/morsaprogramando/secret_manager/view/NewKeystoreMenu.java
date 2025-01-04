@@ -31,7 +31,7 @@ public enum NewKeystoreMenu {
                 verifyPassword = Utils.readLine("Repeat password: ");
             }
 
-            return new KeystoreData(title, password);
+            return new KeystoreData(title, password, true);
 
         } catch (IOException e) {
             throw new RuntimeException(e);

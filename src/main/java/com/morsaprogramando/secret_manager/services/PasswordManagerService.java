@@ -10,9 +10,9 @@ import java.util.List;
 
 public class PasswordManagerService {
 
+    public static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final int MAGIC_NUMBER = 0xD9AABCE3;
     private static final int VERSION = 1;
-    private static final Charset CHARSET = StandardCharsets.UTF_8;
     private final EncryptionService encryptionService;
 
     public PasswordManagerService(EncryptionService encryptionService) {
