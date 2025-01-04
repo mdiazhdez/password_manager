@@ -33,6 +33,7 @@ public class PasswordManagerService {
         ByteArrayOutputStream passwordsStream = new ByteArrayOutputStream();
         DataOutputStream passwordsDataStream = new DataOutputStream(passwordsStream);
         for (StoredPassword password : passwords) {
+            writeString(passwordsDataStream, password.title());
             writeString(passwordsDataStream, password.username());
             writeString(passwordsDataStream, password.password());
         }
@@ -76,9 +77,10 @@ public class PasswordManagerService {
         DataInputStream passwordsStream = new DataInputStream(new ByteArrayInputStream(decryptedData));
         List<StoredPassword> passwords = new ArrayList<>();
         while (passwordsStream.available() > 0) {
+            String title = readString(passwordsStream);
             String username = readString(passwordsStream);
             String password = readString(passwordsStream);
-            passwords.add(new StoredPassword(username, password));
+            passwords.add(new StoredPassword(title, username, password));
         }
 
         return passwords;

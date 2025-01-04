@@ -12,17 +12,15 @@ public class Main {
 
         PasswordManagerService manager = new PasswordManagerService(masterPassword);
 
-        // Example: Encode passwords
         List<StoredPassword> passwords = List.of(
-                new StoredPassword("user1", "password1"),
-                new StoredPassword("user2", "password2")
+                new StoredPassword("mail", "user1", "password1"),
+                new StoredPassword("bank", "user2", "password2")
         );
         byte[] encodedData = manager.encodePasswords(passwords);
 
-        // Example: Decode passwords
         List<StoredPassword> decodedPasswords = manager.decodePasswords(encodedData);
         decodedPasswords.forEach(pw ->
-                System.out.println("Username: " + pw.username() + ", Password: " + pw.password())
+                System.out.println("Title: " + pw.title() + ", Username: " + pw.username() + ", Password: " + pw.password())
         );
     }
 }
