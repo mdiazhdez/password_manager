@@ -5,7 +5,7 @@ import com.morsaprogramando.secret_manager.models.KeystoreData;
 import java.io.IOException;
 import java.util.Objects;
 
-public enum NewKeystoreMenu {
+public enum CreateKeystoreMenu {
     INSTANCE;
 
     public KeystoreData createData() {

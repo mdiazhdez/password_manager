@@ -1,6 +1,7 @@
 package com.morsaprogramando.secret_manager.services;
 
 import com.morsaprogramando.secret_manager.models.StoredPassword;
+import lombok.RequiredArgsConstructor;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -8,16 +9,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+@RequiredArgsConstructor
 public class PasswordManagerService {
 
     public static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final int MAGIC_NUMBER = 0xD9AABCE3;
     private static final int VERSION = 1;
-    private final EncryptionService encryptionService;
 
-    public PasswordManagerService(EncryptionService encryptionService) {
-        this.encryptionService = encryptionService;
-    }
+    private final EncryptionService encryptionService;
 
     public byte[] encodePasswords(List<StoredPassword> passwords) throws Exception {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();

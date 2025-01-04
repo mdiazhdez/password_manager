@@ -3,6 +3,7 @@ package com.morsaprogramando.secret_manager.services;
 import lombok.RequiredArgsConstructor;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -13,11 +14,9 @@ public class FileManagerService {
 
     private static final String KEYSTORE_EXTENSION = ".msf";
 
-    public byte[] readFile() {
+    public byte[] readFile() throws IOException {
         try (FileInputStream stream = new FileInputStream(title + KEYSTORE_EXTENSION)) {
             return stream.readAllBytes();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
