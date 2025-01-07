@@ -13,6 +13,8 @@ public enum InitialMenu {
 
     public Action getAction() {
         try {
+            Utils.clearScreen();
+
             String action = Utils.readLine("Choose [o:open, c:create, q:quit]? ");
 
             return switch (action.toLowerCase()) {

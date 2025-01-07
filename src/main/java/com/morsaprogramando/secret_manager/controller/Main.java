@@ -26,17 +26,17 @@ public class Main {
 
         if (data == null) System.exit(0);
 
-        PasswordManagerService service = initPasswordService(data.masterPassword());
-        FileManagerService fileManagerService = new FileManagerService(data.title());
+        PasswordManagerService passwordService = initPasswordService(data.masterPassword());
+        FileManagerService fileManagerService = new FileManagerService(data.keyStoreName());
 
         List<StoredPassword> passwords = new ArrayList<>();
 
         if (!data.isNew()) {
             try {
-                passwords.addAll(service.decodePasswords(
+                passwords.addAll(passwordService.decodePasswords(
                         fileManagerService.readFile()));
             } catch (FileNotFoundException e) {
-                Utils.println("The keystore was not found. Try again writing the correct keystore title (without extension).");
+                Utils.println("The keystore was not found. Try again writing the correct keystore name (without extension).");
                 System.exit(1);
             } catch (IOException e) {
                 Utils.println("The password is incorrect or the file is corrupted.");
@@ -44,7 +44,8 @@ public class Main {
             }
         }
 
-        KeystoreMenu keystoreMenu = new KeystoreMenu(service, passwords, fileManagerService);
+        KeystoreMenu keystoreMenu = new KeystoreMenu(passwordService, passwords, fileManagerService);
+        keystoreMenu.render();
     }
 
     private static KeystoreData createKeyStore() {
