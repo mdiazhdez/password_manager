@@ -42,8 +42,18 @@ public class Utils{
         System.out.println(x);
     }
     static public void clearScreen(){
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
+        try {
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                // Windows-specific clear command
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                // ANSI escape codes for Unix-like systems
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        } catch (IOException | InterruptedException e) {
+            System.out.println(e.getMessage());
+        }
     }
     static public int random (int x, int y){
         return x + (int)(Math.random() * (y-x+1));

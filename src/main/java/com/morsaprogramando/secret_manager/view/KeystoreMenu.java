@@ -20,6 +20,7 @@ public class KeystoreMenu {
 
         while (true) {
             Utils.clearScreen();
+            Utils.println("");
 
             if (currentState == State.EXIT) return;
 
@@ -39,31 +40,54 @@ public class KeystoreMenu {
 
     }
 
-    private void displayActions() {
-
-    }
-
     private void displayPasswords() {
         if (passwords.isEmpty()) {
             Utils.println("No passwords yet, create your first password.");
-            printDelimiter();
+            printDelimiter('═');
+            Utils.println("");
+            return;
         }
 
-        for (StoredPassword password : passwords) {
-            System.out.printf("%-20s %-20s %-10s%n",
+        System.out.printf("%-20s %-20s %-20s %-10s%n",
+                "Id",
+                "Title",
+                "Username",
+                "Password");
+
+        printDelimiter('─');
+
+        int id = 0;
+        for (StoredPassword password : passwords.stream().sorted().toList()) {
+            System.out.printf("%-20s %-20s %-20s %-10s%n",
+                    ++id,
                     password.title(),
                     password.username(),
                     "******");
         }
+
+        printDelimiter('═');
+        Utils.println("");
     }
 
     private void printCreatePassMenu() {
+        try {
+            String title = Utils.readLine("Title: ");
+            String username = Utils.readLine("Username: ");
+            String password = Utils.readLine("Password: ");
 
+            StoredPassword storedPassword = new StoredPassword(title, username, password);
+            this.passwords.add(storedPassword);
+
+            this.currentState = State.CHOOSE;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void printChooseMenu() {
         Utils.println("1. Add a new password");
-        Utils.println("2. View existing passwords");
+        Utils.println("2. View existing password");
         Utils.println("3. Delete a password");
         Utils.println("4. Save changes");
         Utils.println("5. Exit");
@@ -71,7 +95,7 @@ public class KeystoreMenu {
         try {
             int option = Utils.readInt("Select an option: ");
             this.currentState = State.fromNumber(option);
-            return;
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (Exception e) {
@@ -80,10 +104,9 @@ public class KeystoreMenu {
         }
     }
 
-    private static void printDelimiter() {
-        String delimiter = """
-        ═══════════════════════════════════════════════════════
-        """;
+    public static void printDelimiter(char repeatChar) {
+        int length = 80;
+        String delimiter = String.valueOf(repeatChar).repeat(length);
         Utils.println(delimiter);
     }
 
