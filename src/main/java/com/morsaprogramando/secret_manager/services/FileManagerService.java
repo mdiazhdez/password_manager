@@ -3,7 +3,6 @@ package com.morsaprogramando.secret_manager.services;
 import lombok.RequiredArgsConstructor;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 
