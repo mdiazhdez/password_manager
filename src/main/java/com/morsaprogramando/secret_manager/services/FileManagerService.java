@@ -14,16 +14,21 @@ public class FileManagerService {
     private static final String KEYSTORE_EXTENSION = ".msf";
 
     public byte[] readFile() throws IOException {
-        try (FileInputStream stream = new FileInputStream(title + KEYSTORE_EXTENSION)) {
+        try (FileInputStream stream = new FileInputStream(getTitleAsFileName())) {
             return stream.readAllBytes();
         }
     }
 
-    FileWriter writeFile() {
-        try {
-            return new FileWriter(title);
+    public void write(byte[] encryptedPasswords) {
+        try (FileWriter writer = new FileWriter(getTitleAsFileName())) {
+            writer.write(new String(encryptedPasswords));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String getTitleAsFileName() {
+        if (title.endsWith(KEYSTORE_EXTENSION)) return title;
+        return title + KEYSTORE_EXTENSION;
     }
 }

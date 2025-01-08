@@ -34,11 +34,27 @@ public class KeystoreMenu {
                 case CREATE_PASS -> printCreatePassMenu();
                 case READ_PASS -> printReadPassMenu();
                 case DEL_PASS -> printDeletePassMenu();
-                case SAVE -> {
-                }
+                case SAVE -> printSaveMenu();
             }
         }
 
+    }
+
+    private void printSaveMenu() {
+        try {
+            byte[] encryptedPasswords = passwordManagerService.encodePasswords(passwords);
+
+            fileManagerService.write(encryptedPasswords);
+
+            Utils.println("");
+            Utils.println("Passwords saved successfully!");
+            Utils.readLine("Press Enter to continue...");
+
+            this.currentState = State.CHOOSE;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void printDeletePassMenu() {
