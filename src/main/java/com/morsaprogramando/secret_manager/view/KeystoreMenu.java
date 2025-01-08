@@ -32,8 +32,7 @@ public class KeystoreMenu {
             switch (currentState) {
                 case CHOOSE -> printChooseMenu();
                 case CREATE_PASS -> printCreatePassMenu();
-                case READ_PASS -> {
-                }
+                case READ_PASS -> printReadPassMenu();
                 case DEL_PASS -> {
                 }
                 case SAVE -> {
@@ -41,6 +40,35 @@ public class KeystoreMenu {
             }
         }
 
+    }
+
+    private void printReadPassMenu() {
+        int selectedPassword;
+
+        while (true) {
+            try {
+                selectedPassword = Utils.readInt("Enter the password ID: ");
+
+                if (selectedPassword < 1 || selectedPassword > passwords.size()) {
+                    Utils.println("ID not found, try again.");
+                    continue;
+                }
+                break;
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        try {
+            Utils.println("");
+            Utils.println(passwords.get(selectedPassword - 1).password());
+            Utils.readLine("Press enter to hide the password...");
+
+            this.currentState = State.CHOOSE;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void displayPasswords() {
@@ -51,21 +79,23 @@ public class KeystoreMenu {
             return;
         }
 
-        System.out.printf("%-20s %-20s %-20s %-10s%n",
+        System.out.printf("%-20s %-20s %-20s %-20s %-10s%n",
                 "Id",
                 "Title",
                 "Username",
-                "Password");
+                "Password",
+                "Created At");
 
         printDelimiter('─');
 
         int id = 0;
         for (StoredPassword password : passwords.stream().sorted().toList()) {
-            System.out.printf("%-20s %-20s %-20s %-10s%n",
+            System.out.printf("%-20s %-20s %-20s %-20s %-10s%n",
                     ++id,
                     password.title(),
                     password.username(),
-                    "******");
+                    "******",
+                    password.createdAtAsString());
         }
 
         printDelimiter('═');
@@ -118,6 +148,14 @@ public class KeystoreMenu {
 
         try {
             int option = Utils.readInt("Select an option: ");
+
+            if (option == State.READ_PASS.option && passwords.isEmpty()) {
+                Utils.println("\nNo password available to read!");
+                Utils.readLine("Press (Enter) to continue...");
+                this.currentState = State.CHOOSE;
+                return;
+            }
+
             this.currentState = State.fromNumber(option);
 
         } catch (IOException e) {
@@ -129,7 +167,7 @@ public class KeystoreMenu {
     }
 
     public static void printDelimiter(char repeatChar) {
-        int length = 80;
+        int length = 100;
         String delimiter = String.valueOf(repeatChar).repeat(length);
         Utils.println(delimiter);
     }
