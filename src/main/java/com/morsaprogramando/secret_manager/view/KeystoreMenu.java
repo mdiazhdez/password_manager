@@ -33,13 +33,46 @@ public class KeystoreMenu {
                 case CHOOSE -> printChooseMenu();
                 case CREATE_PASS -> printCreatePassMenu();
                 case READ_PASS -> printReadPassMenu();
-                case DEL_PASS -> {
-                }
+                case DEL_PASS -> printDeletePassMenu();
                 case SAVE -> {
                 }
             }
         }
 
+    }
+
+    private void printDeletePassMenu() {
+        String selectedTitle;
+        StoredPassword selectedPassword;
+
+        outer:
+        while (true) {
+            try {
+                selectedTitle = Utils.readLine("Title to be deleted: ");
+
+                for (StoredPassword password: passwords) {
+                    if (Objects.equals(password.title(), selectedTitle)) {
+                        selectedPassword = password;
+                        break outer;
+                    }
+                }
+
+                Utils.println("Title not found, try again.");
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        try {
+            Utils.println("");
+            passwords.remove(selectedPassword);
+            Utils.readLine("Password \"" + selectedPassword.title() + "\" was removed. Press Enter to continue...");
+
+            this.currentState = State.CHOOSE;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void printReadPassMenu() {
@@ -62,7 +95,7 @@ public class KeystoreMenu {
 
         try {
             Utils.println("");
-            Utils.println(passwords.get(selectedPassword - 1).password());
+            Utils.println(getPasswords().get(selectedPassword - 1).password());
             Utils.readLine("Press enter to hide the password...");
 
             this.currentState = State.CHOOSE;
@@ -89,7 +122,7 @@ public class KeystoreMenu {
         printDelimiter('─');
 
         int id = 0;
-        for (StoredPassword password : passwords.stream().sorted().toList()) {
+        for (StoredPassword password : getPasswords()) {
             System.out.printf("%-20s %-20s %-20s %-20s %-10s%n",
                     ++id,
                     password.title(),
@@ -170,6 +203,10 @@ public class KeystoreMenu {
         int length = 100;
         String delimiter = String.valueOf(repeatChar).repeat(length);
         Utils.println(delimiter);
+    }
+
+    private List<StoredPassword> getPasswords() {
+        return passwords.stream().sorted().toList();
     }
 
     private enum State {
