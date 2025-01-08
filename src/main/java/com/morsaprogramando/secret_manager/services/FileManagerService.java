@@ -3,7 +3,7 @@ package com.morsaprogramando.secret_manager.services;
 import lombok.RequiredArgsConstructor;
 
 import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 @RequiredArgsConstructor
@@ -20,8 +20,8 @@ public class FileManagerService {
     }
 
     public void write(byte[] encryptedPasswords) {
-        try (FileWriter writer = new FileWriter(getTitleAsFileName())) {
-            writer.write(new String(encryptedPasswords));
+        try (FileOutputStream outputStream = new FileOutputStream(getTitleAsFileName())) {
+            outputStream.write(encryptedPasswords);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
