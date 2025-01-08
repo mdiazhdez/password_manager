@@ -6,7 +6,10 @@ import com.morsaprogramando.secret_manager.services.PasswordManagerService;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class KeystoreMenu {
@@ -71,11 +74,32 @@ public class KeystoreMenu {
 
     private void printCreatePassMenu() {
         try {
-            String title = Utils.readLine("Title: ");
+
+            String title = "";
+            boolean alreadyExists = true;
+
+            outer:
+            do {
+                if (!title.isBlank()) {
+                    Utils.println("The title already exists, try another one.");
+                }
+
+                title = Utils.readLine("Title: ");
+
+                for (StoredPassword password: passwords) {
+                    if (Objects.equals(password.title(),title)) {
+                        continue outer;
+                    }
+                }
+
+                alreadyExists = false;
+
+            } while (alreadyExists);
+
             String username = Utils.readLine("Username: ");
             String password = Utils.readLine("Password: ");
 
-            StoredPassword storedPassword = new StoredPassword(title, username, password);
+            StoredPassword storedPassword = new StoredPassword(title, username, password, Instant.now());
             this.passwords.add(storedPassword);
 
             this.currentState = State.CHOOSE;

@@ -8,6 +8,7 @@ import com.morsaprogramando.secret_manager.services.PasswordManagerService;
 import com.morsaprogramando.secret_manager.view.*;
 
 import java.io.FileNotFoundException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,8 +68,8 @@ public class Main {
         // --------------------
 
         List<StoredPassword> passwords = List.of(
-                new StoredPassword("mail", "user1", "password1"),
-                new StoredPassword("bank", "user2", "password2")
+                new StoredPassword("mail", "user1", "password1", Instant.now()),
+                new StoredPassword("bank", "user2", "password2", Instant.now())
         );
         byte[] encodedData = manager.encodePasswords(passwords);
 

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,7 @@ public class PasswordManagerService {
             writeString(passwordsDataStream, password.title());
             writeString(passwordsDataStream, password.username());
             writeString(passwordsDataStream, password.password());
+            writeString(passwordsDataStream, password.createdAt().toString());
         }
         passwordsDataStream.flush();
 
@@ -92,7 +94,8 @@ public class PasswordManagerService {
             String title = readString(passwordsStream);
             String username = readString(passwordsStream);
             String password = readString(passwordsStream);
-            passwords.add(new StoredPassword(title, username, password));
+            String createdAt = readString(passwordsStream);
+            passwords.add(new StoredPassword(title, username, password, Instant.parse(createdAt)));
         }
 
         return passwords;
