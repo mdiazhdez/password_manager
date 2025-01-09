@@ -8,7 +8,6 @@ import com.morsaprogramando.secret_manager.services.PasswordManagerService;
 import com.morsaprogramando.secret_manager.view.*;
 
 import java.io.FileNotFoundException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,25 +56,5 @@ public class Main {
         }
 
         return null;
-    }
-
-    private static void test() throws Exception {
-        String masterPassword = "unpasswordmuyseguro123!";
-
-        // Dependency injection
-        EncryptionService encryptionService = EncryptionService.create(masterPassword);
-        PasswordManagerService manager = new PasswordManagerService(encryptionService);
-        // --------------------
-
-        List<StoredPassword> passwords = List.of(
-                new StoredPassword("mail", "user1", "password1", Instant.now()),
-                new StoredPassword("bank", "user2", "password2", Instant.now())
-        );
-        byte[] encodedData = manager.encodePasswords(passwords);
-
-        List<StoredPassword> decodedPasswords = manager.decodePasswords(encodedData);
-        decodedPasswords.forEach(pw ->
-                System.out.println("Title: " + pw.title() + ", Username: " + pw.username() + ", Password: " + pw.password())
-        );
     }
 }
