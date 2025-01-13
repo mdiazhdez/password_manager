@@ -60,7 +60,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.morsaprogramando.secret_manager.controller.Main</mainClass>
+                            <mainClass>com.morsaprogramando.secret_manager.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

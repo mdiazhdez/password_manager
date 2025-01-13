@@ -11,10 +11,10 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Main {
+public enum Controller {
+    INSTANCE;
 
-    public static void main(String[] args) {
-
+    public void execute() {
         KeystoreData data = initKeyStore();
 
         if (data == null) System.exit(0);
@@ -29,12 +29,12 @@ public class Main {
         keystoreMenu.render();
     }
 
-    private static PasswordManagerService initPasswordService(String masterPassword) {
+    private PasswordManagerService initPasswordService(String masterPassword) {
         EncryptionService encryptionService = EncryptionService.create(masterPassword);
         return new PasswordManagerService(encryptionService);
     }
 
-    private static KeystoreData initKeyStore() {
+    private KeystoreData initKeyStore() {
         InitialMenu.Action action = InitialMenu.INSTANCE.getAction();
 
         return switch (action) {
@@ -44,7 +44,7 @@ public class Main {
         };
     }
 
-    private static ServicesAndPasswords initServicesAndPasswords(KeystoreData data) {
+    private ServicesAndPasswords initServicesAndPasswords(KeystoreData data) {
         PasswordManagerService passwordService = initPasswordService(data.masterPassword());
         FileManagerService fileManagerService = new FileManagerService(data.keyStoreName());
 
@@ -55,7 +55,7 @@ public class Main {
         return new ServicesAndPasswords(passwordService, fileManagerService, passwords);
     }
 
-    private static List<StoredPassword> getPasswordsFromKeystore(PasswordManagerService passwordService,
+    private List<StoredPassword> getPasswordsFromKeystore(PasswordManagerService passwordService,
                                                                  FileManagerService fileManagerService) {
         try {
             return passwordService.decodePasswords(fileManagerService.readFile());
