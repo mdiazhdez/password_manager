@@ -15,12 +15,16 @@ public enum InitialMenu {
         try {
             Utils.clearScreen();
 
-            String action = Utils.readLine("Choose [o:open, c:create, q:quit]? ");
+            Utils.println("1. Open existing keystore");
+            Utils.println("2. Create new keystore");
+            Utils.println("3. Quit");
 
-            return switch (action.toLowerCase()) {
-                case "o" -> Open.INSTANCE;
-                case "c" -> Create.INSTANCE;
-                case "q" -> Quit.INSTANCE;
+            int option = Utils.readInt("Select an option: ");
+
+            return switch (option) {
+                case 1 -> Open.INSTANCE;
+                case 2 -> Create.INSTANCE;
+                case 3 -> Quit.INSTANCE;
                 default -> {
                     Utils.println("Uknown action, exiting...");
                     yield Quit.INSTANCE;
@@ -29,6 +33,11 @@ public enum InitialMenu {
 
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }  catch (Exception e) {
+            Utils.println("Not a valid option! Exiting...");
+            System.exit(1);
         }
+
+        return null;
     }
 }

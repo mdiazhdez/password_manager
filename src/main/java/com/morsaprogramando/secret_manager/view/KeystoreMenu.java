@@ -192,7 +192,7 @@ public class KeystoreMenu {
         Utils.println("2. View existing password");
         Utils.println("3. Delete a password");
         Utils.println("4. Save changes");
-        Utils.println("5. Exit");
+        Utils.println("5. Quit");
 
         try {
             int option = Utils.readInt("Select an option: ");
