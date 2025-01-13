@@ -15,24 +15,16 @@ public class Main {
 
     public static void main(String[] args) {
 
-        InitialMenu.Action action = InitialMenu.INSTANCE.getAction();
-
-        KeystoreData data = switch (action) {
-            case InitialMenu.Open __ -> OpenKeystoreMenu.INSTANCE.getData();
-            case InitialMenu.Create __ -> CreateKeystoreMenu.INSTANCE.createData();
-            case InitialMenu.Quit __ -> null;
-        };
+        KeystoreData data = initKeyStore();
 
         if (data == null) System.exit(0);
 
-        PasswordManagerService passwordService = initPasswordService(data.masterPassword());
-        FileManagerService fileManagerService = new FileManagerService(data.keyStoreName());
+        ServicesAndPasswords servicesAndPasswords = initServicesAndPasswords(data);
 
-        List<StoredPassword> passwords = data.isNew() ?
-                new ArrayList<>() :
-                getPasswordsFromKeystore(passwordService, fileManagerService);
-
-        KeystoreMenu keystoreMenu = new KeystoreMenu(passwordService, passwords, fileManagerService);
+        KeystoreMenu keystoreMenu = new KeystoreMenu(
+                servicesAndPasswords.passwordManagerService(),
+                servicesAndPasswords.passwords(),
+                servicesAndPasswords.fileManagerService());
 
         keystoreMenu.render();
     }
@@ -40,6 +32,27 @@ public class Main {
     private static PasswordManagerService initPasswordService(String masterPassword) {
         EncryptionService encryptionService = EncryptionService.create(masterPassword);
         return new PasswordManagerService(encryptionService);
+    }
+
+    private static KeystoreData initKeyStore() {
+        InitialMenu.Action action = InitialMenu.INSTANCE.getAction();
+
+        return switch (action) {
+            case InitialMenu.Open __ -> OpenKeystoreMenu.INSTANCE.getData();
+            case InitialMenu.Create __ -> CreateKeystoreMenu.INSTANCE.createData();
+            case InitialMenu.Quit __ -> null;
+        };
+    }
+
+    private static ServicesAndPasswords initServicesAndPasswords(KeystoreData data) {
+        PasswordManagerService passwordService = initPasswordService(data.masterPassword());
+        FileManagerService fileManagerService = new FileManagerService(data.keyStoreName());
+
+        List<StoredPassword> passwords = data.isNew() ?
+                new ArrayList<>() :
+                getPasswordsFromKeystore(passwordService, fileManagerService);
+
+        return new ServicesAndPasswords(passwordService, fileManagerService, passwords);
     }
 
     private static List<StoredPassword> getPasswordsFromKeystore(PasswordManagerService passwordService,
@@ -57,4 +70,10 @@ public class Main {
 
         return null;
     }
+
+    private record ServicesAndPasswords(
+            PasswordManagerService passwordManagerService,
+            FileManagerService fileManagerService,
+            List<StoredPassword> passwords
+    ) {}
 }
