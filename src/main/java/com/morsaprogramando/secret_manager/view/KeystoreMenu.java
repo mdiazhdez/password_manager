@@ -65,7 +65,7 @@ public class KeystoreMenu {
 
     private void printDeletePassMenu() {
         String selectedTitle;
-        StoredPassword selectedPassword;
+        StoredPassword selectedPassword = null;
 
         outer:
         while (true) {
@@ -79,7 +79,8 @@ public class KeystoreMenu {
                     }
                 }
 
-                Utils.println("Title not found, try again.");
+                Utils.println("Title not found.");
+                break;
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -88,8 +89,12 @@ public class KeystoreMenu {
 
         try {
             Utils.println("");
-            passwords.remove(selectedPassword);
-            Utils.readLine("Password \"" + selectedPassword.title() + "\" was removed. Press Enter to continue...");
+            if (selectedPassword != null) {
+                passwords.remove(selectedPassword);
+                Utils.readLine("Password \"" + selectedPassword.title() + "\" was removed. Press Enter to continue...");
+            } else {
+                Utils.readLine("No password was removed. Press Enter to continue...");
+            }
 
             this.currentState = State.CHOOSE;
         } catch (IOException e) {
