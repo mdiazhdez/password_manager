@@ -17,6 +17,7 @@ public class KeystoreMenu {
     private final List<StoredPassword> passwords;
     private final FileManagerService fileManagerService;
     private State currentState = State.CHOOSE;
+    private boolean unsavedChanges = false;
 
     public void render() {
 
@@ -29,11 +30,15 @@ public class KeystoreMenu {
             displayPasswords();
 
             switch (currentState) {
-                case CHOOSE -> printChooseMenu();
-                case CREATE_PASS -> printCreatePassMenu();
-                case READ_PASS -> printReadPassMenu();
-                case DEL_PASS -> printDeletePassMenu();
-                case SAVE -> printSaveMenu();
+                case State.CHOOSE -> printChooseMenu();
+                case State.CREATE_PASS -> printCreatePassMenu();
+                case State.READ_PASS -> printReadPassMenu();
+                case State.DEL_PASS -> printDeletePassMenu();
+                case State.SAVE -> printSaveMenu();
+            }
+
+            if (currentState == State.CREATE_PASS || currentState == State.DEL_PASS) {
+                unsavedChanges = true;
             }
         }
 
@@ -44,6 +49,8 @@ public class KeystoreMenu {
             byte[] encryptedPasswords = passwordManagerService.encodePasswords(passwords);
 
             fileManagerService.write(encryptedPasswords);
+
+            unsavedChanges = false;
 
             Utils.println("");
             Utils.println("Passwords saved successfully!");
@@ -195,7 +202,15 @@ public class KeystoreMenu {
         Utils.println("5. Quit");
 
         try {
-            int option = Utils.readInt("Select an option: ");
+            String optionRaw = Utils.readLine("Select an option: ");
+            int option;
+
+            try {
+                option = Integer.parseInt(optionRaw);
+            } catch (NumberFormatException e) {
+                Utils.readLine("Not a valid option! Press (Enter) to return...");
+                return;
+            }
 
             if (option == State.READ_PASS.option && passwords.isEmpty()) {
                 Utils.println("\nNo password available to read!");
@@ -204,12 +219,18 @@ public class KeystoreMenu {
                 return;
             }
 
+            if (option == State.EXIT.option && unsavedChanges) {
+                String answer = Utils.readLine("There are unsaved changes!\nAre you sure you want to quit? (Y)es (N)o: ");
+                if (!"y".equalsIgnoreCase(answer)) {
+                    this.currentState = State.CHOOSE;
+                    return;
+                }
+            }
+
             this.currentState = State.fromNumber(option);
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         } catch (Exception e) {
-            Utils.println("Not a valid option! Exiting...");
+            Utils.println("An internal problem occurred. Exiting...");
             System.exit(1);
         }
     }
