@@ -9,23 +9,35 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @RequiredArgsConstructor
 public class KeystoreMenu {
+
+    private final long maxInactivityTimeMs = 300_000;
 
     private final PasswordManagerService passwordManagerService;
     private final List<StoredPassword> passwords;
     private final FileManagerService fileManagerService;
     private State currentState = State.CHOOSE;
     private boolean unsavedChanges = false;
+    private long lastActivityInMs = System.currentTimeMillis();
 
     public void render() {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(this::monitorIdleTime);
 
         while (true) {
+            lastActivityInMs = System.currentTimeMillis();
+
             Utils.clearScreen();
             Utils.println("");
 
-            if (currentState == State.EXIT) return;
+            if (currentState == State.EXIT) {
+                executorService.close();
+                return;
+            }
 
             displayPasswords();
 
@@ -46,10 +58,7 @@ public class KeystoreMenu {
 
     private void printSaveMenu() {
         try {
-            byte[] encryptedPasswords = passwordManagerService.encodePasswords(passwords);
-
-            fileManagerService.write(encryptedPasswords);
-
+            save();
             unsavedChanges = false;
 
             Utils.println("");
@@ -248,6 +257,35 @@ public class KeystoreMenu {
 
     private List<StoredPassword> getPasswords() {
         return passwords.stream().sorted().toList();
+    }
+
+    private void monitorIdleTime() {
+        try {
+            while (true) {
+                Thread.sleep(10_000);
+
+                long now = System.currentTimeMillis();
+
+                if (now - lastActivityInMs >= maxInactivityTimeMs &&
+                        (currentState == State.CHOOSE || currentState == State.READ_PASS)) {
+                    if (unsavedChanges)
+                        save();
+
+                    System.exit(0);
+                }
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void save() {
+        try {
+            byte[] encryptedPasswords = passwordManagerService.encodePasswords(passwords);
+            fileManagerService.write(encryptedPasswords);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private enum State {
