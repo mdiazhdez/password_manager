@@ -75,7 +75,6 @@ public class KeystoreMenu {
             }
 
             concurrentSave();
-            unsavedChanges = false;
 
             Utils.println("");
             Utils.println("Passwords saved successfully!");
@@ -306,6 +305,9 @@ public class KeystoreMenu {
         try {
             byte[] encryptedPasswords = passwordManagerService.encodePasswords(passwords);
             fileManagerService.write(encryptedPasswords);
+
+            unsavedChanges = false;
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
