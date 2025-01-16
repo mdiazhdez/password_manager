@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @RequiredArgsConstructor
 public class KeystoreMenu {
@@ -23,42 +25,56 @@ public class KeystoreMenu {
     private State currentState = State.CHOOSE;
     private boolean unsavedChanges = false;
     private long lastActivityInMs = System.currentTimeMillis();
+    private final AtomicBoolean saveLock = new AtomicBoolean(false);
 
     public void render() {
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.submit(this::monitorIdleTime);
+        try(ExecutorService executorService = Executors.newSingleThreadExecutor()) {
+            Future<?> future = executorService.submit(this::monitorIdleTime);
 
-        while (true) {
-            lastActivityInMs = System.currentTimeMillis();
+            while (true) {
+                lastActivityInMs = System.currentTimeMillis();
 
-            Utils.clearScreen();
-            Utils.println("");
+                Utils.clearScreen();
+                Utils.println("");
 
-            if (currentState == State.EXIT) {
-                executorService.close();
-                return;
-            }
+                if (currentState == State.EXIT) {
+                    if (saveLock.compareAndSet(false, true)) {
+                        future.cancel(true);
+                        return;
+                    }
 
-            displayPasswords();
+                    // retry to obtain lock and exit
+                    continue;
+                }
 
-            switch (currentState) {
-                case State.CHOOSE -> printChooseMenu();
-                case State.CREATE_PASS -> printCreatePassMenu();
-                case State.READ_PASS -> printReadPassMenu();
-                case State.DEL_PASS -> printDeletePassMenu();
-                case State.SAVE -> printSaveMenu();
-            }
+                displayPasswords();
 
-            if (currentState == State.CREATE_PASS || currentState == State.DEL_PASS) {
-                unsavedChanges = true;
+                switch (currentState) {
+                    case State.CHOOSE -> printChooseMenu();
+                    case State.CREATE_PASS -> printCreatePassMenu();
+                    case State.READ_PASS -> printReadPassMenu();
+                    case State.DEL_PASS -> printDeletePassMenu();
+                    case State.SAVE -> printSaveMenu();
+                }
+
+                if (currentState == State.CREATE_PASS || currentState == State.DEL_PASS) {
+                    unsavedChanges = true;
+                }
             }
         }
-
     }
 
     private void printSaveMenu() {
         try {
-            save();
+            if (!unsavedChanges) {
+                Utils.println("No changes to be saved");
+                Utils.readLine("Press Enter to continue...");
+
+                this.currentState = State.CHOOSE;
+                return;
+            }
+
+            concurrentSave();
             unsavedChanges = false;
 
             Utils.println("");
@@ -269,13 +285,20 @@ public class KeystoreMenu {
                 if (now - lastActivityInMs >= maxInactivityTimeMs &&
                         (currentState == State.CHOOSE || currentState == State.READ_PASS)) {
                     if (unsavedChanges)
-                        save();
+                        concurrentSave();
 
                     System.exit(0);
                 }
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void concurrentSave() {
+        if (saveLock.compareAndSet(false, true)) {
+            save();
+            saveLock.set(false);
         }
     }
 
