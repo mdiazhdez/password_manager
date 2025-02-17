@@ -252,6 +252,13 @@ public class KeystoreMenu {
                 return;
             }
 
+            if (option == State.DEL_PASS.option && passwords.isEmpty()) {
+                Utils.println("\nNo password available to delete!");
+                Utils.readLine("Press (Enter) to continue...");
+                this.currentState = State.CHOOSE;
+                return;
+            }
+
             if (option == State.EXIT.option && unsavedChanges) {
                 String answer = Utils.readLine("There are unsaved changes!\nAre you sure you want to quit? (Y)es (N)o: ");
                 if (!"y".equalsIgnoreCase(answer)) {
