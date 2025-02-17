@@ -62,9 +62,6 @@ public class KeystoreMenu {
                 case State.SAVE -> printSaveMenu();
             }
 
-            if (currentState == State.CREATE_PASS || currentState == State.DEL_PASS) {
-                unsavedChanges = true;
-            }
         }
     }
 
@@ -119,6 +116,8 @@ public class KeystoreMenu {
             Utils.println("");
             if (selectedPassword != null) {
                 passwords.remove(selectedPassword);
+                unsavedChanges = true;
+
                 Utils.readLine("Password \"" + selectedPassword.title() + "\" was removed. Press Enter to continue...");
             } else {
                 Utils.readLine("No password was removed. Press Enter to continue...");
@@ -219,6 +218,8 @@ public class KeystoreMenu {
 
             StoredPassword storedPassword = new StoredPassword(title, username, password, Instant.now());
             this.passwords.add(storedPassword);
+
+            unsavedChanges = true;
 
             this.currentState = State.CHOOSE;
 
