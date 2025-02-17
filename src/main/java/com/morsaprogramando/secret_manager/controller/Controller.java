@@ -17,7 +17,7 @@ public enum Controller {
     public void execute() {
         KeystoreData data = initKeyStore();
 
-        if (data == null) System.exit(0);
+        if (data == null) return;
 
         ServicesAndPasswords servicesAndPasswords = initServicesAndPasswords(data);
 

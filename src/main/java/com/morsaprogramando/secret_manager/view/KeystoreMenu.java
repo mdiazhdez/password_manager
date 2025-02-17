@@ -283,8 +283,9 @@ public class KeystoreMenu {
 
                 if (now - lastActivityInMs >= maxInactivityTimeMs &&
                         (currentState == State.CHOOSE || currentState == State.READ_PASS)) {
-                    if (unsavedChanges)
-                        concurrentSave();
+                    if (unsavedChanges && !concurrentSave()) {
+                        continue;   // try again to save
+                    }
 
                     System.exit(0);
                 }
@@ -294,11 +295,14 @@ public class KeystoreMenu {
         }
     }
 
-    private void concurrentSave() {
+    private boolean concurrentSave() {
         if (saveLock.compareAndSet(false, true)) {
             save();
             saveLock.set(false);
+            return true;
         }
+
+        return false;
     }
 
     private void save() {
