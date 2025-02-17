@@ -29,37 +29,41 @@ public class KeystoreMenu {
 
     public void render() {
         try(ExecutorService executorService = Executors.newSingleThreadExecutor()) {
-            Future<?> future = executorService.submit(this::monitorIdleTime);
+            Future<?> future = executorService.submit(this::monitorIdleTimeInBackground);
 
-            while (true) {
-                lastActivityInMs = System.currentTimeMillis();
+            renderInternal(future);
+        }
+    }
 
-                Utils.clearScreen();
-                Utils.println("");
+    private void renderInternal(Future<?> future) {
+        while (true) {
+            lastActivityInMs = System.currentTimeMillis();
 
-                if (currentState == State.EXIT) {
-                    if (saveLock.compareAndSet(false, true)) {
-                        future.cancel(true);
-                        return;
-                    }
+            Utils.clearScreen();
+            Utils.println("");
 
-                    // retry to obtain lock and exit
-                    continue;
+            if (currentState == State.EXIT) {
+                if (saveLock.compareAndSet(false, true)) {
+                    future.cancel(true);
+                    return;
                 }
 
-                displayPasswords();
+                // retry to obtain lock and exit
+                continue;
+            }
 
-                switch (currentState) {
-                    case State.CHOOSE -> printChooseMenu();
-                    case State.CREATE_PASS -> printCreatePassMenu();
-                    case State.READ_PASS -> printReadPassMenu();
-                    case State.DEL_PASS -> printDeletePassMenu();
-                    case State.SAVE -> printSaveMenu();
-                }
+            printPasswords();
 
-                if (currentState == State.CREATE_PASS || currentState == State.DEL_PASS) {
-                    unsavedChanges = true;
-                }
+            switch (currentState) {
+                case State.CHOOSE -> printChooseMenu();
+                case State.CREATE_PASS -> printCreatePassMenu();
+                case State.READ_PASS -> printReadPassMenu();
+                case State.DEL_PASS -> printDeletePassMenu();
+                case State.SAVE -> printSaveMenu();
+            }
+
+            if (currentState == State.CREATE_PASS || currentState == State.DEL_PASS) {
+                unsavedChanges = true;
             }
         }
     }
@@ -155,7 +159,7 @@ public class KeystoreMenu {
         }
     }
 
-    private void displayPasswords() {
+    private void printPasswords() {
         if (passwords.isEmpty()) {
             Utils.println("No passwords yet, create your first password.");
             printDelimiter('═');
@@ -274,7 +278,7 @@ public class KeystoreMenu {
         return passwords.stream().sorted().toList();
     }
 
-    private void monitorIdleTime() {
+    private void monitorIdleTimeInBackground() {
         try {
             while (true) {
                 Thread.sleep(10_000);
