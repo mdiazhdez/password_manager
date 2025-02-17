@@ -18,6 +18,9 @@ public class EncryptionService {
     private final SecretKey secretKey;
     private final byte[] associatedData = "ProtocolVersion1".getBytes(StandardCharsets.UTF_8);
 
+    private final String CIPHER_CONFIG = "AES/GCM/NoPadding";
+    private final String HASH_CONFIG = "SHA-256";
+
     private EncryptionService(String masterPassword) {
         secretKey = new SecretKeySpec(generate32BytesKeyFromPassword(masterPassword), "AES");
     }
@@ -30,7 +33,7 @@ public class EncryptionService {
 
         byte[] iv = new byte[GCM_IV_LENGTH];
         secureRandom.nextBytes(iv);
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        Cipher cipher = Cipher.getInstance(CIPHER_CONFIG);
         GCMParameterSpec parameterSpec = new GCMParameterSpec(128, iv);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec);
 
@@ -47,7 +50,7 @@ public class EncryptionService {
     }
 
     public byte[] decryptBytes(byte[] cipherMessage) throws Exception {
-        final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        final Cipher cipher = Cipher.getInstance(CIPHER_CONFIG);
 
         AlgorithmParameterSpec gcmIv = new GCMParameterSpec(128, cipherMessage, 0, GCM_IV_LENGTH);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmIv);
@@ -58,13 +61,10 @@ public class EncryptionService {
         return cipher.doFinal(cipherMessage, GCM_IV_LENGTH, cipherMessage.length - GCM_IV_LENGTH);
     }
 
-    private static byte[] generate32BytesKeyFromPassword(String password) {
-        // Optional: Add a unique salt to the password
-        // String salt = "unique_salt_value"; // Replace with a unique value per user
-        // String saltedPassword = salt + password;
+    private byte[] generate32BytesKeyFromPassword(String password) {
 
         try {
-            return MessageDigest.getInstance("SHA-256").digest(password.getBytes(StandardCharsets.UTF_8));
+            return MessageDigest.getInstance(HASH_CONFIG).digest(password.getBytes(StandardCharsets.UTF_8));
 
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);

@@ -11,7 +11,7 @@ public class FileManagerService {
 
     private final String title;
 
-    private static final String KEYSTORE_EXTENSION = ".msf";
+    private static final String KEYSTORE_EXTENSION = ".wsf";
 
     public byte[] readFile() throws IOException {
         try (FileInputStream stream = new FileInputStream(getTitleAsFileName())) {
