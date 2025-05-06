@@ -1,6 +1,7 @@
 package com.morsaprogramando.secret_manager.view;
 
 import java.io.BufferedReader;
+import java.io.Console;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -10,6 +11,23 @@ public class Utils{
 
     static public String readLine(String message) throws IOException {
         print(message); return keyboard.readLine().trim();
+    }
+    static public String readPassword(String message) throws IOException {
+        print(message);
+
+        StringBuilder password = new StringBuilder();
+        Console console = System.console();
+
+        if (console != null) {
+            char[] pwdArray = console.readPassword();
+            for (int i = 0; i < pwdArray.length; i++) {
+                password.append(pwdArray[i]);
+            }
+        } else {
+            password.append(keyboard.readLine());
+        }
+
+        return password.toString().trim();
     }
     static public int readInt(String message)throws IOException{
         return Integer.parseInt(readLine(message));
