@@ -1,116 +1,123 @@
 package com.morsaprogramando.secret_manager.services;
 
-import com.morsaprogramando.secret_manager.models.StoredPassword;
-import lombok.RequiredArgsConstructor;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-@RequiredArgsConstructor
+import com.morsaprogramando.secret_manager.models.StoredPassword;
+
 public class PasswordManagerService {
 
-    public static final Charset CHARSET = StandardCharsets.UTF_8;
-    private static final int MAGIC_NUMBER = 0xD9AABCE3;
-    private static final int VERSION = 1;
+	public static final Charset CHARSET = StandardCharsets.UTF_8;
+	private static final int MAGIC_NUMBER = 0xD9AABCE3;
+	private static final int VERSION = 1;
 
-    private final EncryptionService encryptionService;
+	private final EncryptionService encryptionService;
 
-    public byte[] encodePasswords(List<StoredPassword> passwords) throws Exception {
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+	public PasswordManagerService(EncryptionService encryptionService) {
+		super();
+		this.encryptionService = encryptionService;
+	}
 
-        DataOutputStream dataStream = prepareDataStreamWithHeader(byteStream);
-        byte[] serializedData = serializePasswords(passwords);
-        byte[] encryptBytes = encryptionService.encryptBytes(serializedData);
+	public byte[] encodePasswords(List<StoredPassword> passwords) throws Exception {
+		ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
-        dataStream.writeInt(encryptBytes.length);
-        dataStream.write(encryptBytes);
-        dataStream.flush();
+		DataOutputStream dataStream = prepareDataStreamWithHeader(byteStream);
+		byte[] serializedData = serializePasswords(passwords);
+		byte[] encryptBytes = encryptionService.encryptBytes(serializedData);
 
-        return byteStream.toByteArray();
-    }
+		dataStream.writeInt(encryptBytes.length);
+		dataStream.write(encryptBytes);
+		dataStream.flush();
 
-    public List<StoredPassword> decodePasswords(byte[] fileData) throws Exception {
-        byte[] encryptedBytes = getEncryptedBytes(fileData);
-        byte[] decryptedData = encryptionService.decryptBytes(encryptedBytes);
+		return byteStream.toByteArray();
+	}
 
-        return deserializePasswords(decryptedData);
-    }
+	public List<StoredPassword> decodePasswords(byte[] fileData) throws Exception {
+		byte[] encryptedBytes = getEncryptedBytes(fileData);
+		byte[] decryptedData = encryptionService.decryptBytes(encryptedBytes);
 
-    private DataOutputStream prepareDataStreamWithHeader(ByteArrayOutputStream stream) throws IOException {
-        DataOutputStream dataStream = new DataOutputStream(stream);
+		return deserializePasswords(decryptedData);
+	}
 
-        dataStream.writeInt(MAGIC_NUMBER);
-        dataStream.writeInt(VERSION);
+	private DataOutputStream prepareDataStreamWithHeader(ByteArrayOutputStream stream) throws IOException {
+		DataOutputStream dataStream = new DataOutputStream(stream);
 
-        return dataStream;
-    }
+		dataStream.writeInt(MAGIC_NUMBER);
+		dataStream.writeInt(VERSION);
 
-    private byte[] serializePasswords(List<StoredPassword> passwords) throws IOException {
+		return dataStream;
+	}
 
-        ByteArrayOutputStream passwordsStream = new ByteArrayOutputStream();
-        DataOutputStream passwordsDataStream = new DataOutputStream(passwordsStream);
-        for (StoredPassword password : passwords) {
-            writeString(passwordsDataStream, password.title());
-            writeString(passwordsDataStream, password.username());
-            writeString(passwordsDataStream, password.password());
-            writeString(passwordsDataStream, password.createdAt().toString());
-        }
-        passwordsDataStream.flush();
+	private byte[] serializePasswords(List<StoredPassword> passwords) throws IOException {
 
-        return passwordsStream.toByteArray();
-    }
+		ByteArrayOutputStream passwordsStream = new ByteArrayOutputStream();
+		DataOutputStream passwordsDataStream = new DataOutputStream(passwordsStream);
+		for (StoredPassword password : passwords) {
+			writeString(passwordsDataStream, password.getTitle());
+			writeString(passwordsDataStream, password.getUsername());
+			writeString(passwordsDataStream, password.getPassword());
+			writeString(passwordsDataStream, password.getCreatedAt().toString());
+		}
+		passwordsDataStream.flush();
 
-    private void validateStream(DataInputStream dataStream) throws IOException {
-        int magicNumber = dataStream.readInt();
-        if (magicNumber != MAGIC_NUMBER) {
-            throw new IllegalArgumentException("Invalid file format: Magic number mismatch.");
-        }
+		return passwordsStream.toByteArray();
+	}
 
-        int version = dataStream.readInt();
-        if (version != VERSION) {
-            throw new IllegalArgumentException("Unsupported file version: " + version);
-        }
-    }
+	private void validateStream(DataInputStream dataStream) throws IOException {
+		int magicNumber = dataStream.readInt();
+		if (magicNumber != MAGIC_NUMBER) {
+			throw new IllegalArgumentException("Invalid file format: Magic number mismatch.");
+		}
 
-    private byte[] getEncryptedBytes(byte[] fileData) throws IOException {
-        DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(fileData));
-        validateStream(dataStream);
+		int version = dataStream.readInt();
+		if (version != VERSION) {
+			throw new IllegalArgumentException("Unsupported file version: " + version);
+		}
+	}
 
-        int encryptedLength = dataStream.readInt();
-        byte[] encryptedBytes = new byte[encryptedLength];
-        dataStream.readFully(encryptedBytes);
+	private byte[] getEncryptedBytes(byte[] fileData) throws IOException {
+		DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(fileData));
+		validateStream(dataStream);
 
-        return encryptedBytes;
-    }
+		int encryptedLength = dataStream.readInt();
+		byte[] encryptedBytes = new byte[encryptedLength];
+		dataStream.readFully(encryptedBytes);
 
-    private List<StoredPassword> deserializePasswords(byte[] decryptedData) throws Exception {
-        DataInputStream passwordsStream = new DataInputStream(new ByteArrayInputStream(decryptedData));
-        List<StoredPassword> passwords = new ArrayList<>();
-        while (passwordsStream.available() > 0) {
-            String title = readString(passwordsStream);
-            String username = readString(passwordsStream);
-            String password = readString(passwordsStream);
-            String createdAt = readString(passwordsStream);
-            passwords.add(new StoredPassword(title, username, password, Instant.parse(createdAt)));
-        }
+		return encryptedBytes;
+	}
 
-        return passwords;
-    }
+	private List<StoredPassword> deserializePasswords(byte[] decryptedData) throws Exception {
+		DataInputStream passwordsStream = new DataInputStream(new ByteArrayInputStream(decryptedData));
+		List<StoredPassword> passwords = new ArrayList<>();
+		while (passwordsStream.available() > 0) {
+			String title = readString(passwordsStream);
+			String username = readString(passwordsStream);
+			String password = readString(passwordsStream);
+			String createdAt = readString(passwordsStream);
+			passwords.add(new StoredPassword(title, username, password, Instant.parse(createdAt)));
+		}
 
-    private void writeString(DataOutputStream stream, String value) throws IOException {
-        byte[] bytes = value.getBytes(CHARSET);
-        stream.writeInt(bytes.length);
-        stream.write(bytes);
-    }
+		return passwords;
+	}
 
-    private String readString(DataInputStream stream) throws Exception {
-        int length = stream.readInt();
-        byte[] bytes = new byte[length];
-        stream.readFully(bytes);
-        return new String(bytes, CHARSET);
-    }
+	private void writeString(DataOutputStream stream, String value) throws IOException {
+		byte[] bytes = value.getBytes(CHARSET);
+		stream.writeInt(bytes.length);
+		stream.write(bytes);
+	}
+
+	private String readString(DataInputStream stream) throws Exception {
+		int length = stream.readInt();
+		byte[] bytes = new byte[length];
+		stream.readFully(bytes);
+		return new String(bytes, CHARSET);
+	}
 }

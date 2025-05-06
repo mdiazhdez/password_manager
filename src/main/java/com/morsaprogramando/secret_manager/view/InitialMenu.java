@@ -5,8 +5,7 @@ import java.io.IOException;
 public enum InitialMenu {
     INSTANCE;
 
-    public sealed interface Action permits Open, Create, Quit {}
-
+    public interface Action{}
     public enum Open implements Action { INSTANCE }
     public enum Create implements Action { INSTANCE }
     public enum Quit implements Action { INSTANCE }
@@ -21,15 +20,15 @@ public enum InitialMenu {
 
             int option = Utils.readInt("Select an option: ");
 
-            return switch (option) {
-                case 1 -> Open.INSTANCE;
-                case 2 -> Create.INSTANCE;
-                case 3 -> Quit.INSTANCE;
-                default -> {
+            switch (option) {
+                case 1: return Open.INSTANCE;
+                case 2: return Create.INSTANCE;
+                case 3: return Quit.INSTANCE;
+                default: {
                     Utils.println("Uknown action, exiting...");
-                    yield Quit.INSTANCE;
+                    return Quit.INSTANCE;
                 }
-            };
+            }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
